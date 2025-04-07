@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 # 初始化 LineBotApi 和 WebhookHandler
 Configuration = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
-handler = WebhookHandler(os.getenv("CHANNEL_SECRET"))
+line_handler = WebhookHandler(os.getenv("CHANNEL_SECRET"))
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -33,14 +33,14 @@ def callback():
     app.logger.info("Request body: " + body)
 
     try:
-        handler.handle(body, signature)
+        line_handler.handle(body, signature)
     except InvalidSignatureError:
         app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
 
     return 'OK'
 
-@handler.add(FollowEvent)
+@line_handler.add(FollowEvent)
 def handle_follow(event: FollowEvent):
     user_id = event.source.user_id
     reply_token = event.reply_token
@@ -52,7 +52,7 @@ def handle_follow(event: FollowEvent):
     welcome_message = f"Hi！{user_name}👋\n歡迎來到煤鄉與河谷交織的秘境──猴硐\n準備好和考察隊一起出發了嗎？(●'◡'●)\n請輸入「GoGo」讓我們一起揭開猴硐的神秘面紗吧！"
     Configuration.reply_message(reply_token, TextSendMessage(text=welcome_message))
 
-@handler.add(MessageEvent, message=TextMessage)
+@line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event: MessageEvent):
     user_id = event.source.user_id
     user_input = event.message.text.strip()
