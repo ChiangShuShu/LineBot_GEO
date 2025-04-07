@@ -23,8 +23,8 @@ from linebot.models import (
 app = Flask(__name__)
 
 # 初始化 LineBotApi 和 WebhookHandler
-line_bot_api = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
-line_handler = WebhookHandler(os.getenv("CHANNEL_SECRET"))
+Configuration = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
+handler = WebhookHandler(os.getenv("CHANNEL_SECRET"))
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -33,26 +33,26 @@ def callback():
     app.logger.info("Request body: " + body)
 
     try:
-        line_handler.handle(body, signature)
+        handler.handle(body, signature)
     except InvalidSignatureError:
         app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
 
     return 'OK'
 
-@line_handler.add(FollowEvent)
+@handler.add(FollowEvent)
 def handle_follow(event: FollowEvent):
     user_id = event.source.user_id
     reply_token = event.reply_token
 
-    profile = line_bot_api.get_profile(user_id)
+    profile = Configuration.get_profile(user_id)
     user_name = profile.display_name
 
     # 歡迎訊息
     welcome_message = f"Hi！{user_name}👋\n歡迎來到煤鄉與河谷交織的秘境──猴硐\n準備好和考察隊一起出發了嗎？(●'◡'●)\n請輸入「GoGo」讓我們一起揭開猴硐的神秘面紗吧！"
-    line_bot_api.reply_message(reply_token, TextSendMessage(text=welcome_message))
+    Configuration.reply_message(reply_token, TextSendMessage(text=welcome_message))
 
-@line_handler.add(MessageEvent, message=TextMessage)
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event: MessageEvent):
     user_id = event.source.user_id
     user_input = event.message.text.strip()
@@ -186,7 +186,7 @@ def handle_message(event: MessageEvent):
         )
         
         # 傳送三個訊息：文字訊息 + 任務 Flex 訊息 + 文字訊息
-        line_bot_api.reply_message(reply_token, [text_message_1, flex_message, text_message_2])
+        Configuration.reply_message(reply_token, [text_message_1, flex_message, text_message_2])
 
     elif user_input == "努力生產 安全為先 提高警覺 防患未然":
         reply_token = event.reply_token
@@ -204,7 +204,7 @@ def handle_message(event: MessageEvent):
             text="👉「尋找這座廟，輸入它的名稱。」"
         )
         
-        line_bot_api.reply_message(reply_token, [task_message_3, sticker_message, text_message_4, text_message_5])
+        Configuration.reply_message(reply_token, [task_message_3, sticker_message, text_message_4, text_message_5])
 
     elif user_input == "福正宮" or user_input == "寄命土地公":
         reply_token = event.reply_token
@@ -234,7 +234,7 @@ def handle_message(event: MessageEvent):
             text="🔍 建築特徵如下：\n(1) ㄇ字型建築：三面圍繞形成中庭，與一般礦工公寓不同，屬於獨戶宿舍。\n(2) 黑瓦屋頂：屋頂鋪設日本黑瓦。\n👉 「請在侯硐路上找到這棟建築，並告訴我它是什麼？」"
         )
     
-        line_bot_api.reply_message(reply_token, [flex_message, text_message_6, text_message_7])
+        Configuration.reply_message(reply_token, [flex_message, text_message_6, text_message_7])
 
     elif user_input == "美援厝":
         reply_token = event.reply_token
@@ -279,7 +279,7 @@ def handle_message(event: MessageEvent):
         )
 
         # 發送選擇訊息
-        line_bot_api.reply_message(reply_token, [flex_message_2, template_message])
+        Configuration.reply_message(reply_token, [flex_message_2, template_message])
 
     elif user_input == "是":
         # 在這裡添加「是」選項的回應邏輯，並繼續下一步
@@ -290,7 +290,7 @@ def handle_message(event: MessageEvent):
             TextSendMessage(text = "👉「請在侯硐路上找到一棟石砌牆構造的房屋，並告訴我他是什麼？」")
         ]
 
-        line_bot_api.reply_message(event.reply_token, messages)
+        Configuration.reply_message(event.reply_token, messages)
         
         # 這裡可以繼續發送更多訊息或進行下一步的邏輯
 
@@ -321,14 +321,14 @@ def handle_message(event: MessageEvent):
         )
 
         # 重新發送選擇訊息
-        line_bot_api.reply_message(reply_token, template_message)
+        Configuration.reply_message(reply_token, template_message)
 
     elif user_input == "醫護所" or user_input == "員工診所" :
         reply_token = event.reply_token
         text_message_8 = TextSendMessage(
             text="沒錯，這裡正是醫護所。但是長輩們想尋找的王醫生仔，沒人記得他的全名了🥲，請協助長輩透過搜尋引擎查找瑞三醫護所的醫生，找出他的全名。"
         )
-        line_bot_api.reply_message(reply_token, text_message_8)
+        Configuration.reply_message(reply_token, text_message_8)
         
     elif user_input == "王則能":
         reply_token = event.reply_token
@@ -353,7 +353,7 @@ def handle_message(event: MessageEvent):
             contents=bubble
         )
 
-        line_bot_api.reply_message(reply_token, [text_message_9, flex_message_3])
+        Configuration.reply_message(reply_token, [flex_message_3,text_message_9])
 
     elif user_input == "太好了":
         reply_token = event.reply_token
@@ -389,7 +389,7 @@ def handle_message(event: MessageEvent):
         )
 
         # 發送選擇訊息
-        line_bot_api.reply_message(reply_token, [text_message_10, image_1, template_message_2])
+        Configuration.reply_message(reply_token, [text_message_10, image_1, template_message_2])
 
 
     elif user_input == "橋墩":
@@ -397,14 +397,14 @@ def handle_message(event: MessageEvent):
         messages_2 = TextSendMessage(text="✅ 正確！當年改建成鋼筋混凝土的拱橋，靠河岸兩側的兩座橋梁仍保留日本時代的三層鐵橋的橋墩呢。")
         image_2 = ImageSendMessage(original_content_url='https://i.imgur.com/13J0xY1.jpg', preview_image_url='https://i.imgur.com/13J0xY1.jpg')
         image_3 = ImageSendMessage(original_content_url='https://i.imgur.com/lyM8M7R.png', preview_image_url='https://i.imgur.com/lyM8M7R.png')
-        messages_3 = TextSendMessage(text="「這是1980年代的運煤橋，面對猴硐坑的方向，與今日對比，是不是旁邊多了輸送帶呢！跟著這張周朝南提供，簡紫吟改繪的地圖，尋找看看輸送帶最遠處的山上是甚麼空間吧。」")
+        messages_3 = TextSendMessage(text="「這是1980年代的運煤橋，面對猴硐坑的方向，與今日對比，是不是旁邊多了輸送帶呢！跟著這張周朝南提供，簡紫吟改繪的地圖，尋找看看捲揚機拉上去最遠處的山上是甚麼空間吧。」")
 
-        line_bot_api.reply_message(event.reply_token, [messages_2, image_2, image_3, messages_3])
+        Configuration.reply_message(event.reply_token, [messages_2, image_2, image_3, messages_3])
 
 
     elif user_input == "下弦構材" or user_input == "橫樑":
         # 用戶選擇「下弦構材」或「橫樑」後的回應（錯誤答案）
-        line_bot_api.reply_message(event.reply_token, [
+        Configuration.reply_message(event.reply_token, [
             TextSendMessage(text="❌ 不是哦，這個部分在瑞三大橋中並未保留。"),
             TextSendMessage(text="請重新選擇，這是你的選項："),
             TemplateSendMessage(
@@ -430,7 +430,7 @@ def handle_message(event: MessageEvent):
             )
         ])
 
-    elif user_input == "捨石場" or user_input == "員工診所" :
+    elif user_input == "捨石場":
         reply_token = event.reply_token
         text_message_11 = TextSendMessage(
             text="沒錯！輸送帶連接的是捨石場，將整煤廠剩下的煤渣跟石頭輸送至山上捨石場廢棄。"
@@ -441,12 +441,12 @@ def handle_message(event: MessageEvent):
         text_message_13 = TextSendMessage(
             text="👉「可以前往整煤廠參觀了解選煤的操作步驟唷！」\n(自導式考察到此結束，感謝參與🫡)"
         )
-        line_bot_api.reply_message(reply_token, [text_message_11, text_message_12, text_message_13])
+        Configuration.reply_message(reply_token, [text_message_11, text_message_12, text_message_13])
 
     else:
         reply_token = event.reply_token
         text_messages = TextSendMessage(text="不對哦！再想想看")
-        line_bot_api.reply_message(reply_token, text_messages)
+        Configuration.reply_message(reply_token, text_messages)
 
     
 
